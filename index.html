@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>스마트 칭찬 노트 - 학생</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <!-- PWA 매니페스트 및 iOS 연동 메타 태그 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="칭찬노트">
+  <link rel="apple-touch-icon" href="assets/img/icon-192.png">
+
+  <!-- 서비스 워커 등록 스크립트 -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js")
+          .then(reg => console.log("Service Worker registered successfully:", reg.scope))
+          .catch(err => console.error("Service Worker registration failed:", err));
+      });
+    }
+  </script>
+</head>
+
+<body class="student-app">
+  <main class="app-shell app-shell-mobile">
+
+    <p id="student-status" class="status app-status"></p>
+
+    <section class="tab-panel active" data-tab-panel="home">
+      <section class="avatar-hero surface-card">
+        <h1 class="brand-title"
+          style="text-align: center; margin-top: 3px; margin-bottom: 3px; font-weight: 800; font-size: 30px;">스마트 칭찬 노트
+        </h1>
+        <div class="avatar-stage"
+          style="width: 100%; height: 200px; overflow: visible; display: flex; align-items: flex-end; justify-content: center; border-radius: 0; background: none; box-shadow: none;">
+          <!-- 아바타 이미지 (JS에서 getAvatarPetLayout 수치 반영됨) -->
+          <img id="current-avatar" alt="현재 아바타" style="image-rendering: pixelated;">
+          <!-- 마이펫 이미지 (JS에서 getAvatarPetLayout 수치 반영됨) -->
+          <img id="current-pet" alt="현재 마이펫" style="image-rendering: pixelated;">
+        </div>
+        <p class="screen-copy">다양한 아바타와 마이펫을 수집해보세요.</p>
+      </section>
+
+      <section class="xp-card surface-card card-3d">
+        <div class="section-row" style="margin-bottom: 8px;">
+          <span class="eyebrow">레벨</span>
+          <strong>Lv. <span id="level-value">1</span></strong>
+        </div>
+        <div class="section-row">
+          <span class="eyebrow">XP</span>
+          <strong><span id="xp-value">0</span> XP</strong>
+        </div>
+        <div class="progress">
+          <div id="level-progress" class="progress-fill"></div>
+        </div>
+        <p id="next-level-value" class="status"></p>
+      </section>
+
+      <section class="summary-grid">
+        <article class="summary-card card-3d">
+          <span class="material-symbols-outlined">face</span>
+          <div>
+            <p>보유 아바타</p>
+            <strong id="avatar-count">0</strong>
+          </div>
+        </article>
+        <article class="summary-card card-3d">
+          <span class="material-symbols-outlined">pets</span>
+          <div>
+            <p>보유 마이펫</p>
+            <strong id="pet-count">0</strong>
+          </div>
+        </article>
+      </section>
+
+      <!-- 아바타 선물 상자 뽑기 카드 -->
+      <section id="avatar-draw-card" class="daily-draw-card surface-card" style="margin-bottom: 12px;">
+        <div class="daily-draw-copy">
+          <span class="eyebrow">Avatar Gift</span>
+          <h2>아바타 상자 열기</h2>
+          <p id="avatar-draw-status">칭찬 점수 10점마다 아바타를 뽑을 수 있어요.</p>
+        </div>
+        <button id="avatar-draw-button" class="button daily-draw-button" type="button" disabled>
+          <span class="material-symbols-outlined" aria-hidden="true">redeem</span>
+          <span>뽑기</span>
+        </button>
+      </section>
+
+      <section id="daily-pet-draw-card" class="daily-draw-card surface-card" data-daily-draw-state="loading">
+        <div class="daily-draw-copy">
+          <span class="eyebrow">Daily Gift</span>
+          <h2>오늘의 마이펫 뽑기</h2>
+          <p id="daily-pet-draw-status">오늘 받을 수 있는 마이펫을 확인하고 있어요.</p>
+        </div>
+        <button id="daily-pet-draw-button" class="button daily-draw-button" type="button" disabled>
+          <span class="material-symbols-outlined" aria-hidden="true">redeem</span>
+          <span>뽑기</span>
+        </button>
+      </section>
+
+
+    </section>
+
+    <section class="tab-panel" data-tab-panel="collection">
+      <div class="section-heading">
+        <h2>보관함</h2>
+        <p>칭찬을 받을 때마다 새 보상이 열립니다.</p>
+      </div>
+      <div class="segmented-control theme-black collection-tabs" role="tablist" aria-label="보관함 종류">
+        <button class="segment active" type="button" data-collection-target="avatar">아바타</button>
+        <button class="segment" type="button" data-collection-target="pet">마이펫</button>
+      </div>
+      <div id="avatar-gender-toggle-container" class="segmented-control theme-black"
+        style="display: flex; gap: 0; margin-bottom: 12px; justify-content: flex-end; width: 90px; margin-left: auto; padding: 3px;">
+        <button class="segment active" type="button" data-gender-target="1"
+          style="font-size: 13px; font-weight: 700; flex: 1; text-align: center; padding: 4px 0;">남</button>
+        <button class="segment" type="button" data-gender-target="2"
+          style="font-size: 13px; font-weight: 700; flex: 1; text-align: center; padding: 4px 0;">여</button>
+      </div>
+      <div id="avatar-grid" class="collection-grid active" data-collection-panel="avatar"></div>
+      <div id="pet-grid" class="collection-grid" data-collection-panel="pet"></div>
+    </section>
+
+    <section class="tab-panel" data-tab-panel="history">
+      <div class="section-heading">
+        <h2>칭찬 기록</h2>
+        <p>받은 칭찬과 열린 보상을 시간순으로 확인합니다.</p>
+      </div>
+      <div id="log-list" class="timeline-list"></div>
+    </section>
+
+    <section class="tab-panel" data-tab-panel="settings">
+      <div class="section-heading">
+        <h2>설정</h2>
+        <p>학생 정보와 앱 상태를 확인합니다.</p>
+      </div>
+      <section class="surface-card settings-list">
+        <div class="metric-row">
+          <span class="metric-label">학번</span>
+          <strong id="settings-student-id">-</strong>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">현재 점수</span>
+          <strong id="settings-student-xp">-</strong>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">보유 아바타</span>
+          <strong id="settings-student-avatar-count">-</strong>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">보유 마이펫</span>
+          <strong id="settings-student-pet-count">-</strong>
+        </div>
+      </section>
+      <section class="surface-card level-guide-card" aria-labelledby="level-guide-title">
+        <div class="level-guide-header">
+          <span class="material-symbols-outlined" aria-hidden="true">stars</span>
+          <h3 id="level-guide-title">성장 및 보상 안내</h3>
+        </div>
+        
+        <!-- 레벨업 시스템 -->
+        <div class="guide-section">
+          <h4 class="guide-subtitle">
+            <span class="material-symbols-outlined">trending_up</span> 레벨업 시스템
+          </h4>
+          <p class="guide-desc">칭찬을 받아 100 XP가 쌓일 때마다 레벨이 1씩 올라갑니다. (최대 레벨 50)</p>
+        </div>
+
+        <!-- 아바타 획득 -->
+        <div class="guide-section">
+          <h4 class="guide-subtitle">
+            <span class="material-symbols-outlined">inventory_2</span> 아바타 획득 방법
+          </h4>
+          <p class="guide-desc">누적 칭찬 점수 <strong>10 XP 마다</strong> 새로운 아바타를 뽑을 수 있는 상자 열기 기회가 1회 제공됩니다.</p>
+        </div>
+
+        <!-- 마이펫 획득 -->
+        <div class="guide-section">
+          <h4 class="guide-subtitle">
+            <span class="material-symbols-outlined">pets</span> 마이펫 획득 방법
+          </h4>
+          <p class="guide-desc">매일 하루에 한 번씩 홈 화면에서 무료로 새로운 마이펫을 뽑을 수 있습니다.</p>
+        </div>
+      </section>
+      <button id="reset-data-button" class="button full-width" type="button"
+        style="background: #000000; color: #ffffff; border: 1px solid #000000; margin-bottom: 12px; font-weight: 700;">데이터
+        초기화</button>
+      <button id="logout-button" class="button danger full-width" type="button">로그아웃</button>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="학생 화면">
+    <button class="bottom-nav-item active" type="button" data-tab-target="home">
+      <span class="material-symbols-outlined">home</span>
+      <span>홈</span>
+    </button>
+    <button class="bottom-nav-item" type="button" data-tab-target="collection">
+      <span class="material-symbols-outlined">backpack</span>
+      <span>보관함</span>
+    </button>
+    <button class="bottom-nav-item" type="button" data-tab-target="history">
+      <span class="material-symbols-outlined">history</span>
+      <span>기록</span>
+    </button>
+    <button class="bottom-nav-item" type="button" data-tab-target="settings">
+      <span class="material-symbols-outlined">settings</span>
+      <span>설정</span>
+    </button>
+  </nav>
+
+  <div id="starter-avatar-modal" class="modal-overlay starter-avatar-modal" aria-labelledby="starter-avatar-title"
+    role="dialog" aria-modal="true">
+    <div class="modal-content starter-avatar-content">
+      <div class="modal-header">
+        <h2 id="starter-avatar-title">첫 아바타를 선택하세요</h2>
+      </div>
+      <p class="starter-avatar-copy">성장을 함께할 첫 아바타를 선물로 받을 수 있어요.</p>
+      <div class="starter-avatar-options">
+        <button class="starter-avatar-option" type="button" data-starter-avatar="1">
+          <img src="assets/img/avatarLibrary_IMG/avatarLibrary_1_001.png" alt="첫 번째 아바타">
+          <span>이 아바타 받기</span>
+        </button>
+        <button class="starter-avatar-option" type="button" data-starter-avatar="2">
+          <img src="assets/img/avatarLibrary_IMG/avatarLibrary_2_001.png" alt="두 번째 아바타">
+          <span>이 아바타 받기</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reward-draw-modal" class="modal-overlay reward-draw-modal" aria-labelledby="reward-draw-title" role="dialog"
+    aria-modal="true">
+    <div class="modal-content reward-draw-content">
+      <div class="modal-header">
+        <h2 id="reward-draw-title">선물 상자를 열어 보세요</h2>
+        <button id="reward-draw-close" class="icon-button" type="button" aria-label="닫기">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <p id="reward-draw-copy" class="reward-draw-copy">상자를 두드리면 더 빨리 열려요.</p>
+      <button id="reward-draw-box" class="reward-draw-box" type="button" aria-label="선물 상자 두드리기">
+        <span id="reward-draw-count" class="reward-draw-count">10</span>
+        <span class="material-symbols-outlined reward-draw-gift" aria-hidden="true">redeem</span>
+      </button>
+      <div id="reward-draw-result" class="reward-draw-result" hidden>
+        <!-- 후광(Halo) 효과 요소를 이미지 뒤에 절대 배치 (연하게 처리) -->
+        <div id="reward-draw-result-halo" style="position: absolute; width: 140px; height: 140px; border-radius: 9999px; filter: blur(30px); opacity: 0.2; z-index: -1; transform: translate(-50%, -50%); left: 50%; top: 64px; transition: all 0.3s ease;"></div>
+        
+        <img id="reward-draw-result-image" alt="" style="z-index: 1;">
+        <!-- 뽑기 결과창 등급 배지 추가 -->
+        <div id="reward-draw-result-tier-badge" style="font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; display: inline-block; margin: 4px 0 8px; z-index: 1;"></div>
+        
+        <strong id="reward-draw-result-title" style="z-index: 1;"></strong>
+        <p id="reward-draw-result-copy" style="z-index: 1;"></p>
+        <p id="reward-draw-confirm-text" style="margin: 12px 0 4px; font-size: 13px; font-weight: 700; color: var(--text); z-index: 1;"></p>
+        <div style="display: flex; gap: 8px; width: 100%; margin-top: 8px; justify-content: center; z-index: 1;">
+          <button id="reward-draw-set-rep" class="button" type="button" style="padding: 8px 16px; font-weight: 800; background: var(--accent); color: #ffffff; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px;">대표로 설정</button>
+          <button id="reward-draw-keep" class="button" type="button" style="padding: 8px 16px; font-weight: 800; background: #e2e8f0; color: #475569; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px;">그냥 닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Representative Selection Confirmation Modal -->
+  <div id="rep-confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rep-confirm-title">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 24px; border-radius: 12px; background: #ffffff; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);">
+      <div class="modal-header" style="justify-content: center; border-bottom: none; margin-bottom: 8px;">
+        <h2 id="rep-confirm-title" style="font-size: 18px; font-weight: 800; color: var(--text); margin: 0;">대표 설정</h2>
+      </div>
+      <!-- 이미지 표시 영역 추가 -->
+      <div style="margin: 16px auto 8px; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <img id="rep-confirm-image" src="" alt="선택한 아이템" style="max-width: 100px; max-height: 100px; object-fit: contain;">
+      </div>
+      <!-- 등급 배지 표시 영역 -->
+      <div id="rep-confirm-tier-badge" style="font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; display: inline-block; margin-bottom: 12px;"></div>
+      <p id="rep-confirm-message" style="color: var(--muted); font-size: 14px; font-weight: 700; margin: 8px 0 24px; line-height: 1.5;"></p>
+      <div style="display: flex; gap: 8px; width: 100%; justify-content: center;">
+        <button id="btn-rep-confirm-ok" class="button" type="button" style="padding: 10px 20px; font-weight: 800; background: var(--accent); color: #ffffff; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px; flex: 1;">설정</button>
+        <button id="btn-rep-confirm-cancel" class="button" type="button" style="padding: 10px 20px; font-weight: 800; background: #e2e8f0; color: #475569; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px; flex: 1;">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/rules.js"></script>
+  <script src="assets/js/rewards.js"></script>
+  <script src="assets/js/student.js"></script>
+</body>
+
+</html>
