@@ -190,37 +190,36 @@
 
         <!-- Panel 2: Praise Registration -->
         <section id="panel-praise" class="panel-view hidden">
-          <div class="panel-header-row">
+          <div class="panel-header-row" style="margin-bottom: 12px;">
             <div>
               <h1>칭찬 등록</h1>
-              <span class="count-badge">학생들에게 칭찬 카테고리와 경험치 보상을 부여합니다.</span>
             </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
             <!-- 상부: 좌우 분할 -->
-            <div class="praise-top-section" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; height: 230px;">
+            <div class="praise-top-section" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; height: 185px;">
               <!-- 상부 왼쪽: 학년/반 선택 및 검색 -->
-              <aside class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+              <aside class="card" style="padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px;">
                 <div class="field" style="margin: 0;">
-                  <label style="font-weight: 700; font-size: 13px;">조회 반 선택</label>
-                  <div style="display: flex; gap: 8px; margin-top: 6px;">
-                    <select id="praise-filter-grade" class="select" style="flex: 1; padding: 10px;">
+                  <label style="font-weight: 700; font-size: 12.5px;">조회 반 선택</label>
+                  <div style="display: flex; gap: 6px; margin-top: 4px;">
+                    <select id="praise-filter-grade" class="select" style="flex: 1; padding: 8px; font-size: 13px;">
                       <option value="">학년 전체</option>
                     </select>
-                    <select id="praise-filter-class" class="select" style="flex: 1; padding: 10px;">
+                    <select id="praise-filter-class" class="select" style="flex: 1; padding: 8px; font-size: 13px;">
                       <option value="">반 전체</option>
                     </select>
                   </div>
                 </div>
                 <div class="field" style="margin: 0;">
-                  <label style="font-weight: 700; font-size: 13px;">이름/학번 검색</label>
-                  <input id="student-praise-search" class="input" type="search" placeholder="이름/학번 검색" style="margin-top: 6px; padding: 10px;">
+                  <label style="font-weight: 700; font-size: 12.5px;">이름/학번 검색</label>
+                  <input id="student-praise-search" class="input" type="search" placeholder="이름/학번 검색" style="margin-top: 4px; padding: 8px; font-size: 13px;">
                 </div>
               </aside>
 
               <!-- 상부 오른쪽: 점수 조절 및 부여 UI -->
-              <section class="card" style="padding: 20px; display: flex; flex-direction: column; justify-content: flex-start; gap: 12px; overflow: hidden;">
+              <section class="card" style="padding: 12px 16px; display: flex; flex-direction: column; justify-content: flex-start; gap: 8px; overflow: hidden;">
                 <!-- 선택 학생 리스트 영역은 레이아웃 상 숨김 (JS 안정성을 위해 DOM 요소는 보존) -->
                 <div style="display: none !important;">
                   <h2 id="selected-student-title">학생을 선택하세요</h2>
@@ -229,7 +228,7 @@
                 </div>
 
                 <!-- 점수 조절 및 부여 UI 영역 -->
-                <div style="padding: 14px 20px; background: #f8fafc; border-radius: var(--border-radius); border: 1px solid #e2e8f0; width: 100%;">
+                <div style="padding: 8px 14px; background: #f8fafc; border-radius: var(--border-radius); border: 1px solid #e2e8f0; width: 100%;">
                   <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                       <span style="font-weight: 700; color: var(--text-muted); font-size: 13px;">부여할 점수</span>
@@ -251,21 +250,21 @@
                   </div>
                 </div>
 
-                <div id="praise-result" style="display: none; padding: 12px 16px; background-color: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 8px; margin-top: 12px; margin-bottom: 8px; color: #166534; font-size: 13.5px; line-height: 1.6; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.05); max-height: 85px; overflow-y: auto; flex-shrink: 0;"></div>
-                <p id="teacher-status" class="status" style="margin-top: 8px;"></p>
+                <div id="praise-result" style="display: none; padding: 8px 12px; background-color: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 6px; margin-top: 8px; margin-bottom: 4px; color: #166534; font-size: 12.5px; line-height: 1.5; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.05); max-height: 75px; overflow-y: auto; flex-shrink: 0;"></div>
+                <p id="teacher-status" class="status" style="margin-top: 4px; font-size: 12px;"></p>
               </section>
             </div>
 
             <!-- 하부: 학생 전체 목록 그리드 -->
-            <section class="card" style="padding: 16px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                <h3 style="font-size: 14px; margin: 0; font-weight: 700; color: var(--text-muted);">대상 학생 선택 (학번 순 정렬)</h3>
-                <div style="display: flex; gap: 8px;">
-                  <button id="btn-praise-select-all" class="button secondary" type="button" style="padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 4px;">전체 선택</button>
-                  <button id="btn-praise-deselect-all" class="button secondary" type="button" style="padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 4px; background: #fee2e2; color: #991b1b; border-color: #fca5a5;">전체 해제</button>
+            <section class="card" style="padding: 12px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                <h3 style="font-size: 13.5px; margin: 0; font-weight: 700; color: var(--text-muted);">대상 학생 선택 (학번 순 정렬)</h3>
+                <div style="display: flex; gap: 6px;">
+                  <button id="btn-praise-select-all" class="button secondary" type="button" style="padding: 4px 10px; font-size: 11.5px; font-weight: 700; border-radius: 4px;">전체 선택</button>
+                  <button id="btn-praise-deselect-all" class="button secondary" type="button" style="padding: 4px 10px; font-size: 11.5px; font-weight: 700; border-radius: 4px; background: #fee2e2; color: #991b1b; border-color: #fca5a5;">전체 해제</button>
                 </div>
               </div>
-              <div id="student-praise-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 4px;">
+              <div id="student-praise-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; max-height: 520px; overflow-y: auto; padding-right: 4px;">
                 <!-- Student buttons injected dynamically -->
               </div>
             </section>
