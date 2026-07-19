@@ -621,7 +621,6 @@
       selectedStudentTitle.textContent = "학생을 선택하세요";
       selectedStudentMeta.textContent = "";
       selectedStudentMeta.style.display = "none";
-      praiseResult.classList.add("hidden");
       return;
     }
 
@@ -664,14 +663,34 @@
       });
       selectedStudentsBadges.appendChild(badge);
     });
-
-    praiseResult.classList.add("hidden");
   }
 
   // Score Update UI Helper
   function updatePraiseScoreUI() {
     praiseScoreValue.textContent = `+${currentPraiseScore}`;
     praiseSubmitText.textContent = `점수 부여 (+${currentPraiseScore})`;
+  }
+
+  function showPraiseResult(html) {
+    praiseResult.innerHTML = html;
+    praiseResult.classList.remove("hidden");
+    praiseResult.style.display = "block";
+    praiseResult.style.opacity = "1";
+    praiseResult.style.transition = "none"; // Reset transition
+
+    if (window.praiseResultTimeout) {
+      clearTimeout(window.praiseResultTimeout);
+    }
+    
+    window.praiseResultTimeout = setTimeout(() => {
+      praiseResult.style.transition = "opacity 0.8s ease";
+      praiseResult.style.opacity = "0";
+      
+      window.praiseResultTimeout = setTimeout(() => {
+        praiseResult.style.display = "none";
+        praiseResult.classList.add("hidden");
+      }, 800);
+    }, 5000);
   }
 
   // Praise Submit Multi logic
@@ -686,7 +705,11 @@
 
     try {
       setBusy(true);
+      if (window.praiseResultTimeout) {
+        clearTimeout(window.praiseResultTimeout);
+      }
       praiseResult.style.display = "none";
+      praiseResult.classList.add("hidden");
       setStatus(teacherStatus, "칭찬 점수를 지급하고 있습니다...");
 
       // 각 학생마다 assignPraise API 호출 실행
@@ -725,8 +748,7 @@
         resultHtml += `<span style="font-size: 12.5px; opacity: 0.9;">· ${student.school_id} ${student.name}: Lv.${res.oldLevel} → Lv.${res.newLevel} ${res.reward ? `🎁 (신규 보상 언락!)` : ""}</span><br>`;
       });
       
-      praiseResult.innerHTML = resultHtml;
-      praiseResult.style.display = "block";
+      showPraiseResult(resultHtml);
       setStatus(teacherStatus, "");
     } catch (e) {
       setStatus(teacherStatus, "칭찬 등록 오류: " + e.message, true);
@@ -745,7 +767,11 @@
 
     try {
       setBusy(true);
+      if (window.praiseResultTimeout) {
+        clearTimeout(window.praiseResultTimeout);
+      }
       praiseResult.style.display = "none";
+      praiseResult.classList.add("hidden");
       setStatus(teacherStatus, "마이펫 뽑기권을 지급하고 있습니다...");
 
       const client = window.GrowthNoteSupabase.getClient();
@@ -796,8 +822,7 @@
         resultHtml += `<span style="font-size: 12.5px; opacity: 0.9;">· ${student.school_id} ${student.name}</span><br>`;
       });
 
-      praiseResult.innerHTML = resultHtml;
-      praiseResult.style.display = "block";
+      showPraiseResult(resultHtml);
       setStatus(teacherStatus, "");
     } catch (e) {
       setStatus(teacherStatus, "뽑기권 등록 오류: " + e.message, true);
