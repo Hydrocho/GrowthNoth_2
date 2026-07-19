@@ -9,13 +9,6 @@
     return item.pet_id;
   }
 
-  function chooseFrom(items, random) {
-    if (!items.length) return null;
-    // 거듭제곱 지수 10.0을 적용하여 91~100번대 획득 확률을 약 1% 수준으로 제한 (앞 번호에 강력한 쏠림)
-    const biasedRandom = Math.pow(random(), 10.0);
-    const index = Math.floor(biasedRandom * items.length);
-    return items[Math.max(0, Math.min(items.length - 1, index))];
-  }
 
   function selectNextReward(options) {
     const rules = root.GrowthNoteRules;
@@ -43,9 +36,57 @@
       selectedGender = availableMale.length ? "1" : "2";
     }
 
-    // 3. 결정된 성별의 풀에서 마이펫과 동일한 biasedRandom(chooseFrom) 로직 적용
-    const targetPool = selectedGender === "1" ? availableMale : availableFemale;
-    return { type: "avatar", item: chooseFrom(targetPool, random) };
+    const availableList = selectedGender === "1" ? availableMale : availableFemale;
+    const ownedOfGender = ownedAvatars.filter((item) => String(item.gender) === selectedGender);
+
+    // 3. 등급 돌파 확률 판정 (마이펫 방식 동일화)
+    const r = random();
+    let targetTier = null;
+    if (r < 0.001) {
+      targetTier = "Mythic";
+    } else if (r < 0.005) {
+      targetTier = "Legendary";
+    } else if (r < 0.035) {
+      targetTier = "Epic";
+    } else if (r < 0.115) {
+      targetTier = "Rare";
+    }
+
+    function getAvatarTier(avatarIdStr) {
+      const id = parseInt(avatarIdStr, 10);
+      if (id >= 1 && id <= 30) return "Common";
+      if (id >= 31 && id <= 50) return "Rare";
+      if (id >= 51 && id <= 70) return "Epic";
+      if (id >= 71 && id <= 90) return "Legendary";
+      return "Mythic";
+    }
+
+    // 돌파 판정이 떴고, 해당 등급의 미획득 아바타가 있다면 무작위 지급
+    if (targetTier) {
+      const tierAvatars = availableList.filter((item) => getAvatarTier(item.avatar_id) === targetTier);
+      if (tierAvatars.length > 0) {
+        const idx = Math.floor(random() * tierAvatars.length);
+        return { type: "avatar", item: tierAvatars[idx] };
+      }
+    }
+
+    // 4. 기본 모드: 슬라이딩 윈도우 방식 (해당 성별의 보유 개수 M + 15 범위 제한)
+    const M = ownedOfGender.length;
+    const maxWindowId = M + 15;
+
+    const windowAvatars = availableList.filter((item) => {
+      const id = parseInt(item.avatar_id, 10);
+      return id <= maxWindowId;
+    });
+
+    if (windowAvatars.length > 0) {
+      const idx = Math.floor(random() * windowAvatars.length);
+      return { type: "avatar", item: windowAvatars[idx] };
+    }
+
+    // 5. Fallback: 윈도우 내 미획득 아바타가 없으면 남은 모든 아바타 중 무작위
+    const idx = Math.floor(random() * availableList.length);
+    return { type: "avatar", item: availableList[idx] };
   }
 
   function selectDailyPetReward(options) {
