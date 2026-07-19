@@ -683,13 +683,10 @@
 
     const score = currentPraiseScore;
     const selectedList = students.filter(s => selectedStudentIds.has(s.id));
-    const studentNames = selectedList.map(s => `${s.school_id} ${s.name}`).join(", ");
-    
-    const ok = window.confirm(`선택한 ${selectedList.length}명의 학생에게 각각 +${score}점의 칭찬 점수를 일괄 부여하시겠습니까?\n\n[대상 학생]\n${studentNames}`);
-    if (!ok) return;
 
     try {
       setBusy(true);
+      praiseResult.style.display = "none";
       setStatus(teacherStatus, "칭찬 점수를 지급하고 있습니다...");
 
       // 각 학생마다 assignPraise API 호출 실행
@@ -709,15 +706,28 @@
       await loadStudents();
       renderSelectedStudentInfo();
 
-      let resultText = `<strong>총 ${results.length}명의 학생에게 칭찬 점수(+${score} XP)가 성공적으로 지급되었습니다!</strong><br><br>`;
+      const now = new Date();
+      let ampm = "오전";
+      let hour = now.getHours();
+      if (hour >= 12) {
+        ampm = "오후";
+        if (hour > 12) hour -= 12;
+      } else if (hour === 0) {
+        hour = 12;
+      }
+      const min = String(now.getMinutes()).padStart(2, "0");
+      const sec = String(now.getSeconds()).padStart(2, "0");
+      const timeStr = `[${ampm} ${String(hour).padStart(2, "0")}:${min}:${sec}]`;
+
+      let resultHtml = `<strong>${timeStr} 총 ${results.length}명의 학생에게 칭찬 점수(+${score} XP)가 성공적으로 지급되었습니다!</strong><br>`;
       results.forEach((res, index) => {
         const student = selectedList[index];
-        resultText += `· ${student.school_id} ${student.name}: Lv.${res.oldLevel} → Lv.${res.newLevel} ${res.reward ? `🎁 (신규 보상 언락!)` : ""}<br>`;
+        resultHtml += `<span style="font-size: 12.5px; opacity: 0.9;">· ${student.school_id} ${student.name}: Lv.${res.oldLevel} → Lv.${res.newLevel} ${res.reward ? `🎁 (신규 보상 언락!)` : ""}</span><br>`;
       });
       
-      praiseResultModalBody.innerHTML = resultText;
-      toggleModal(modalPraiseResult, true);
-      setStatus(teacherStatus, "성공적으로 저장되었습니다.");
+      praiseResult.innerHTML = resultHtml;
+      praiseResult.style.display = "block";
+      setStatus(teacherStatus, "");
     } catch (e) {
       setStatus(teacherStatus, "칭찬 등록 오류: " + e.message, true);
     } finally {
@@ -732,13 +742,10 @@
     }
 
     const selectedList = students.filter(s => selectedStudentIds.has(s.id));
-    const studentNames = selectedList.map(s => `${s.school_id} ${s.name}`).join(", ");
-    
-    const ok = window.confirm(`선택한 ${selectedList.length}명의 학생에게 각각 마이펫 추가 뽑기 기회(뽑기권)를 1회씩 부여하시겠습니까?\n\n[대상 학생]\n${studentNames}`);
-    if (!ok) return;
 
     try {
       setBusy(true);
+      praiseResult.style.display = "none";
       setStatus(teacherStatus, "마이펫 뽑기권을 지급하고 있습니다...");
 
       const client = window.GrowthNoteSupabase.getClient();
@@ -771,9 +778,27 @@
       await loadStudents();
       renderSelectedStudentInfo();
 
-      praiseResultModalBody.innerHTML = `<strong>총 ${selectedList.length}명의 학생에게 마이펫 추가 뽑기권이 성공적으로 지급되었습니다!</strong>`;
-      toggleModal(modalPraiseResult, true);
-      setStatus(teacherStatus, "성공적으로 저장되었습니다.");
+      const now = new Date();
+      let ampm = "오전";
+      let hour = now.getHours();
+      if (hour >= 12) {
+        ampm = "오후";
+        if (hour > 12) hour -= 12;
+      } else if (hour === 0) {
+        hour = 12;
+      }
+      const min = String(now.getMinutes()).padStart(2, "0");
+      const sec = String(now.getSeconds()).padStart(2, "0");
+      const timeStr = `[${ampm} ${String(hour).padStart(2, "0")}:${min}:${sec}]`;
+
+      let resultHtml = `<strong>${timeStr} 총 ${selectedList.length}명의 학생에게 마이펫 추가 뽑기권이 성공적으로 지급되었습니다!</strong><br>`;
+      selectedList.forEach(student => {
+        resultHtml += `<span style="font-size: 12.5px; opacity: 0.9;">· ${student.school_id} ${student.name}</span><br>`;
+      });
+
+      praiseResult.innerHTML = resultHtml;
+      praiseResult.style.display = "block";
+      setStatus(teacherStatus, "");
     } catch (e) {
       setStatus(teacherStatus, "뽑기권 등록 오류: " + e.message, true);
     } finally {
