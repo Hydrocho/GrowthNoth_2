@@ -70,10 +70,9 @@
   }
 
   const AVATAR_POOL = [];
-  for (let gender = 1; gender <= 2; gender += 1) {
-    for (let id = 1; id <= 100; id += 1) {
-      AVATAR_POOL.push({ avatar_id: pad3(id), gender: String(gender) });
-    }
+  for (let id = 1; id <= 100; id += 1) {
+    AVATAR_POOL.push({ avatar_id: pad3(id), gender: "1" });
+    AVATAR_POOL.push({ avatar_id: pad3(id), gender: "2" });
   }
 
   const PET_POOL = [];
