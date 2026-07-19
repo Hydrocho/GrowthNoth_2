@@ -23,11 +23,29 @@
     const random = options.random || Math.random;
 
     const ownedAvatarKeys = new Set(ownedAvatars.map(avatarKey));
-    const availableAvatars = rules.AVATAR_POOL.filter((item) => !ownedAvatarKeys.has(avatarKey(item)));
+    
+    // 1. 남학생과 여학생 미획득 아바타 풀 분리
+    const availableMale = rules.AVATAR_POOL.filter(
+      (item) => item.gender === "1" && !ownedAvatarKeys.has(avatarKey(item))
+    );
+    const availableFemale = rules.AVATAR_POOL.filter(
+      (item) => item.gender === "2" && !ownedAvatarKeys.has(avatarKey(item))
+    );
 
-    if (!availableAvatars.length) return null;
+    // 둘 다 모두 수집했다면 null 반환
+    if (!availableMale.length && !availableFemale.length) return null;
 
-    return { type: "avatar", item: chooseFrom(availableAvatars, random) };
+    // 2. 성별을 50:50 확률로 먼저 결정 (한쪽 성별을 다 모았다면 남은 성별로 자동 대체)
+    let selectedGender;
+    if (availableMale.length && availableFemale.length) {
+      selectedGender = random() < 0.5 ? "1" : "2";
+    } else {
+      selectedGender = availableMale.length ? "1" : "2";
+    }
+
+    // 3. 결정된 성별의 풀에서 마이펫과 동일한 biasedRandom(chooseFrom) 로직 적용
+    const targetPool = selectedGender === "1" ? availableMale : availableFemale;
+    return { type: "avatar", item: chooseFrom(targetPool, random) };
   }
 
   function selectDailyPetReward(options) {
