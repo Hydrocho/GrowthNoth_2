@@ -52,15 +52,15 @@
   function getItemTierInfo(idStr) {
     const id = parseInt(idStr, 10);
     if (id >= 1 && id <= 30) {
-      return { name: "Common", color: "#64748b", bg: "#f1f5f9", probability: "79.43%" };
+      return { name: "Common", color: "#64748b", bg: "#f1f5f9", probability: "기본 범위" };
     } else if (id >= 31 && id <= 50) {
-      return { name: "Rare", color: "#3b82f6", bg: "#dbeafe", probability: "4.64%" };
+      return { name: "Rare", color: "#3b82f6", bg: "#dbeafe", probability: "돌파 8.0%" };
     } else if (id >= 51 && id <= 70) {
-      return { name: "Epic", color: "#a855f7", bg: "#f3e8ff", probability: "3.20%" };
+      return { name: "Epic", color: "#a855f7", bg: "#f3e8ff", probability: "돌파 3.0%" };
     } else if (id >= 71 && id <= 90) {
-      return { name: "Legendary", color: "#eab308", bg: "#fef9c3", probability: "2.45%" };
+      return { name: "Legendary", color: "#eab308", bg: "#fef9c3", probability: "돌파 0.4%" };
     } else { // 91 ~ 100
-      return { name: "Mythic", color: "#ef4444", bg: "#fee2e2", probability: "1.05%" };
+      return { name: "Mythic", color: "#ef4444", bg: "#fee2e2", probability: "돌파 0.1%" };
     }
   }
 

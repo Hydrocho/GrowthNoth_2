@@ -40,7 +40,54 @@
 
     if (!availablePets.length) return null;
 
-    return { type: "pet", item: chooseFrom(availablePets, random) };
+    // 1. 등급 돌파 확률 판정 (Method C)
+    const r = random();
+    let targetTier = null;
+    if (r < 0.001) {
+      targetTier = "Mythic";
+    } else if (r < 0.005) {
+      targetTier = "Legendary";
+    } else if (r < 0.035) {
+      targetTier = "Epic";
+    } else if (r < 0.115) {
+      targetTier = "Rare";
+    }
+
+    function getPetTier(petIdStr) {
+      const id = parseInt(petIdStr, 10);
+      if (id >= 1 && id <= 30) return "Common";
+      if (id >= 31 && id <= 50) return "Rare";
+      if (id >= 51 && id <= 70) return "Epic";
+      if (id >= 71 && id <= 90) return "Legendary";
+      return "Mythic";
+    }
+
+    // 돌파 판정이 떴고, 해당 등급의 미획득 펫이 있다면 무작위 지급
+    if (targetTier) {
+      const tierPets = availablePets.filter((item) => getPetTier(item.pet_id) === targetTier);
+      if (tierPets.length > 0) {
+        const idx = Math.floor(random() * tierPets.length);
+        return { type: "pet", item: tierPets[idx] };
+      }
+    }
+
+    // 2. 기본 모드: 슬라이딩 윈도우 방식 (보유 개수 M + 15 범위 제한)
+    const M = ownedPets.length;
+    const maxWindowId = M + 15;
+
+    const windowPets = availablePets.filter((item) => {
+      const id = parseInt(item.pet_id, 10);
+      return id <= maxWindowId;
+    });
+
+    if (windowPets.length > 0) {
+      const idx = Math.floor(random() * windowPets.length);
+      return { type: "pet", item: windowPets[idx] };
+    }
+
+    // 3. 대체 방안 (Fallback): 윈도우 내 미획득 펫이 없으면 남은 모든 펫 중 랜덤
+    const idx = Math.floor(random() * availablePets.length);
+    return { type: "pet", item: availablePets[idx] };
   }
 
   async function assignPraise(studentId, praiseItemId, options) {
